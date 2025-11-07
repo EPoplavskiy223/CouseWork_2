@@ -13,7 +13,8 @@ class Job(ABC):
         pass
 
     @abstractmethod
-    def _connect(self, search_query: dict) -> list:
+    def _connect(self, search_query: dict) -> Any:
+        """Подключается к АПИ и возвращает переданные данные """
         pass
 
 
@@ -35,23 +36,28 @@ class HeadHunterAPI(Job):
                 return ["Ошибка, статус запроса:", response.status_code]
 
         except Exception as e:
-            print("Ошибка :", e)
+            print("Ошибка ->", e)
 
-    def get_vacancies(self, search_query: str = None) -> str | None:
+    def get_vacancies(self, search_query: str = None) -> list:
         """Простой сбор параметров для запроса к _connect с выводом ключа items"""
         param = {}
 
         if search_query:
             param["area"] = 1
             param["text"] = search_query
-            param["per_page"] = 2
+            param["per_page"] = 100
             data = self._connect(param)
-            result = data.get("items")
+            if data is None:
+                return []
+            result = data.get("items", [])
             return result
         else:
             param["area"] = 1
+            param["per_page"] = 100
             data = self._connect(param)
-            result = data.get("items")
+            if data is None:
+                return []
+            result = data.get("items", [])
             return result
 
 
@@ -74,13 +80,13 @@ class Vacancy:
         self.url = self._url_validate(data.get("alternate_url"))
 
         self.salary_data = self._salary_validate(data.get("salary"))
-        self.salary_display = f"{self.salary_data['salary_display']} {self.salary_data['salary_currency']}"
+        self.salary_display = f"{self.salary_data['salary_display']} {self.salary_data.get('salary_currency')}"
         self.salary_value = self.salary_data["salary_value"]
 
-        self.description = self._description_validate(
-            data.get("snippet").get("requirement")
-        )
-        self.company = self._company_validate(data.get("employer").get("name"))
+        snippet = data.get("snippet") or {}
+        employer = data.get("employer") or {}
+        self.description = self._description_validate(snippet.get("requirement"))
+        self.company = self._company_validate(employer.get("name"))
 
     @staticmethod
     def _title_validate(data: dict | None) -> str | dict:
@@ -105,27 +111,30 @@ class Vacancy:
             if data["from"] is not None and data["to"] is not None:
                 salary_data = round((data["from"] + data["to"]) / 2)
                 return {
+                    "salary_data": salary_data,
                     "salary_display": f"Средняя зарплата: {salary_data}",
                     "salary_value": salary_data,
                     "salary_currency": data.get("currency"),
                 }
             elif data["from"] is not None:
                 return {
+                    "salary_data": data["from"],
                     "salary_display": f"Зарплата от: {data['from']}",
                     "salary_value": data["from"],
                     "salary_currency": data.get("currency"),
                 }
             else:
                 return {
-                    "salary_display": f"Зарплата от: {data['to']}",
+                    "salary_data": data["to"],
+                    "salary_display": f"Зарплата до: {data['to']}",
                     "salary_value": data["to"] * 0.75,
                     "salary_currency": data.get("currency"),
                 }
         else:
             return {
+                "salary_data": 0,
                 "salary_display": "Зарплата не указана",
                 "salary_value": 0,
-                "salary_currency": "",
             }
 
     @staticmethod
@@ -168,3 +177,13 @@ class Vacancy:
 
     def __eq__(self, other) -> bool:
         return self.salary_value == other.salary_value
+
+    def to_dict(self) -> dict:
+        """Преобразует объект Vacancy в словарь"""
+        return {
+            "title": self.title,
+            "url": self.url,
+            "salary": self.salary_data,
+            "company": self.company,
+            "description": self.description,
+        }
