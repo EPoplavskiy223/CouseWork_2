@@ -33,10 +33,12 @@ class HeadHunterAPI(Job):
             if response.status_code == 200:
                 return response.json()
             else:
-                return ["Ошибка, статус запроса:", response.status_code]
+                print(f"Ошибка, статус запроса: {response.status_code}")
+                return None
 
         except Exception as e:
             print("Ошибка ->", e)
+            return None
 
     def get_vacancies(self, search_query: str = None) -> list:
         """Простой сбор параметров для запроса к _connect с выводом ключа items"""

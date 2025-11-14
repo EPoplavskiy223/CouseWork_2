@@ -22,9 +22,7 @@ class FileHandler(ABC):
 
 class JSONFileHandler(FileHandler):
 
-    def __init__(
-        self, filename=r"data/vacancies.json"
-    ):
+    def __init__(self, filename=r"data/vacancies.json"):
         self.__filename = filename
         self._ensure_file_exists()
 

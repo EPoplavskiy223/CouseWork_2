@@ -145,5 +145,3 @@ def user_input_search(title="Введите запрос -> "):
         return user_input
     else:
         return None
-
-
