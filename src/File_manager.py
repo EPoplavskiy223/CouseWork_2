@@ -10,7 +10,9 @@ class FileHandler(ABC):
         pass
 
     @abstractmethod
-    def filtered_vacancies(self, title=None, salary_min=None, company=None, description=None):
+    def filtered_vacancies(
+        self, title=None, salary_min=None, company=None, description=None
+    ):
         pass
 
     @abstractmethod
@@ -20,7 +22,9 @@ class FileHandler(ABC):
 
 class JSONFileHandler(FileHandler):
 
-    def __init__(self, filename="data/vacancies.json"):
+    def __init__(
+        self, filename=r"data/vacancies.json"
+    ):
         self.__filename = filename
         self._ensure_file_exists()
 
@@ -30,7 +34,7 @@ class JSONFileHandler(FileHandler):
             with open(self.__filename, "w", encoding="utf-8") as file:
                 json.dump([], file)
 
-    def _read_json(self):
+    def read_json(self):
         """Читает файл формата JSON"""
         try:
             with open(self.__filename, "r", encoding="utf-8") as f:
@@ -45,7 +49,7 @@ class JSONFileHandler(FileHandler):
 
     def add_vacancy(self, vacancy):
         """Добавление и проверка вакансий"""
-        data_json = self._read_json()
+        data_json = self.read_json()
         if vacancy.get("title") is None:
             return
 
@@ -61,7 +65,7 @@ class JSONFileHandler(FileHandler):
     ):
         """Поиск по категории в вакансии"""
         result = []
-        data_json = self._read_json()
+        data_json = self.read_json()
 
         for vacancy in data_json:
             comparison = True
@@ -84,8 +88,8 @@ class JSONFileHandler(FileHandler):
         return result
 
     def delete_vacancy(self, vacancy=None):
-        """Удаление вакансии по URL или полная очитска файла"""
-        data_json = self._read_json()
+        """Удаление вакансии по URL или полная очистка файла"""
+        data_json = self.read_json()
         result = []
         if vacancy is not None:
             for item in data_json:

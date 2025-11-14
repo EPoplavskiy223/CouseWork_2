@@ -14,7 +14,7 @@ class Job(ABC):
 
     @abstractmethod
     def _connect(self, search_query: dict) -> Any:
-        """Подключается к АПИ и возвращает переданные данные """
+        """Подключается к АПИ и возвращает переданные данные"""
         pass
 
 
@@ -80,7 +80,7 @@ class Vacancy:
         self.url = self._url_validate(data.get("alternate_url"))
 
         self.salary_data = self._salary_validate(data.get("salary"))
-        self.salary_display = f"{self.salary_data['salary_display']} {self.salary_data.get('salary_currency')}"
+        self.salary_display = f"{self.salary_data['salary_display']} {self.salary_data.get('salary_currency', '')}"
         self.salary_value = self.salary_data["salary_value"]
 
         snippet = data.get("snippet") or {}
@@ -187,3 +187,22 @@ class Vacancy:
             "company": self.company,
             "description": self.description,
         }
+
+    @classmethod
+    def from_file_data(cls, file_data):
+        """Создает Vacancy из данных файла"""
+        vacancy = cls.__new__(cls)
+
+        vacancy.title = file_data["title"]
+        vacancy.url = file_data["url"]
+        vacancy.company = file_data["company"]
+        vacancy.description = file_data["description"]
+
+        salary_data = file_data["salary"]
+        vacancy.salary_data = salary_data
+        vacancy.salary_display = (
+            f"{salary_data['salary_display']} {salary_data.get('salary_currency', '')}"
+        )
+        vacancy.salary_value = salary_data["salary_value"]
+
+        return vacancy
