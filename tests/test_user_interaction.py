@@ -1,24 +1,22 @@
-import unittest
-from unittest.mock import patch, MagicMock, call
-import sys
+# flake8: noqa: E402
 import os
+import sys
+import unittest
+from unittest.mock import MagicMock, patch
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from src.user_interaction import (
-    user_interaction,
-    top_vacancies_by_salary,
     condition_format_print_in_file,
     format_print,
     save_vacancies,
     search_vacancies_api,
     search_vacancies_file,
     title_menu,
+    top_vacancies_by_salary,
     user_input_int,
     user_input_search,
-    json_manager,
-    cl_api,
-    cl_vacancy,
+    user_interaction,
 )
 
 
@@ -94,7 +92,7 @@ class TestUserInteraction(unittest.TestCase):
         title_menu()
 
         calls = mock_print.call_args_list
-        menu_texts = [call[0][0] for call in calls]
+        menu_texts = [c[0][0] for c in calls]
 
         self.assertIn("======== Меню вакансий ========", menu_texts)
         self.assertTrue(
@@ -110,7 +108,7 @@ class TestUserInteraction(unittest.TestCase):
         """Тест форматированного вывода вакансий"""
         format_print(self.sample_vacancies)
 
-        output = "\n".join(str(call[0][0]) for call in mock_print.call_args_list)
+        output = "\n".join(str(c[0][0]) for c in mock_print.call_args_list)
 
         self.assertIn("Вакансия №1", output)
         self.assertIn("Python Developer", output)
@@ -126,7 +124,6 @@ class TestUserInteraction(unittest.TestCase):
         with patch("src.user_interaction.format_print") as mock_format_print:
             top_vacancies_by_salary(1)
 
-            # Проверяем, что данные сортируются по зарплате
             mock_format_print.assert_called_once()
             called_data = mock_format_print.call_args[0][0]
             self.assertEqual(len(called_data), 1)
@@ -185,7 +182,7 @@ class TestUserInteraction(unittest.TestCase):
         """Тест поиска в файле по зарплате"""
         mock_json_manager.filtered_vacancies.return_value = [self.sample_vacancies[0]]
 
-        result = search_vacancies_file("100000")
+        search_vacancies_file("100000")
 
         mock_json_manager.filtered_vacancies.assert_called_once_with(salary_min=100000)
         mock_save.assert_called_once_with(vacancy_dict=[self.sample_vacancies[0]])
@@ -200,7 +197,7 @@ class TestUserInteraction(unittest.TestCase):
         """Тест поиска в файле по описанию"""
         mock_json_manager.filtered_vacancies.return_value = [self.sample_vacancies[0]]
 
-        result = search_vacancies_file("python")
+        search_vacancies_file("python")
 
         mock_json_manager.filtered_vacancies.assert_called_once_with(
             description="python"
@@ -320,8 +317,8 @@ class TestUserInteraction(unittest.TestCase):
 
         user_interaction()
         error_printed = any(
-            "Введите категорию из предложенных" in str(call[0][0])
-            for call in mock_print.call_args_list
+            "Введите категорию из предложенных" in str(c[0][0])
+            for c in mock_print.call_args_list
         )
         self.assertTrue(error_printed)
 
@@ -339,13 +336,7 @@ class TestUserInteraction(unittest.TestCase):
         except Exception:
             self.fail("user_interaction не обработал исключение")
 
-        # Проверяем, что ошибка была выведена
         error_printed = any(
-            "Ошибка: Test error" in str(call[0][0])
-            for call in mock_print.call_args_list
+            "Ошибка: Test error" in str(c[0][0]) for c in mock_print.call_args_list
         )
         self.assertTrue(error_printed)
-
-
-if __name__ == "__main__":
-    unittest.main()

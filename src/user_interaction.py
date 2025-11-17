@@ -49,7 +49,9 @@ def user_interaction() -> None:
 def top_vacancies_by_salary(quantity: int) -> None:
     """Сортировка по зарплате из файла"""
     data = json_manager.read_json()
-    sorted_data = sorted(data, key=lambda x: x["salary"].get("salary_value"), reverse=True)
+    sorted_data = sorted(
+        data, key=lambda x: x["salary"].get("salary_value"), reverse=True
+    )
     format_print(sorted_data[:quantity])
 
 
